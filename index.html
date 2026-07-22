@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Layanan Universal Indonesia — Direktori Kontak Layanan Publik</title>
+<meta name="description" content="Direktori resmi kontak layanan publik dan vital di seluruh Indonesia: keamanan, kesehatan, kebencanaan, infrastruktur, dan administrasi kependudukan." />
+
+<!-- Tailwind CSS via CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Google Fonts: Fraunces (display/serif berkarakter untuk judul resmi) & Inter (body, mudah dibaca) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<!-- Konfigurasi Tailwind: palet & token desain kustom -->
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          // Palet inti: Emas Tua (Gold) + Charcoal/Slate — kesan resmi & elegan
+          gold: {
+            50:  '#fdf8ec',
+            100: '#faedc4',
+            200: '#f5db8d',
+            300: '#eec155',
+            400: '#e6a92e',
+            500: '#c98d1a', // aksen utama
+            600: '#a56f14',
+            700: '#7f5313',
+            800: '#684315',
+            900: '#583916',
+          },
+          charcoal: {
+            50:  '#f4f5f6',
+            100: '#e5e7ea',
+            200: '#cbd0d6',
+            300: '#a3acb6',
+            400: '#748090',
+            500: '#576273',
+            600: '#454e5d',
+            700: '#39404c',
+            800: '#262b33', // permukaan gelap utama
+            900: '#181c22', // latar paling gelap
+            950: '#101317',
+          },
+        },
+        fontFamily: {
+          display: ['"Fraunces"', 'serif'],
+          sans: ['"Inter"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        boxShadow: {
+          'gold-glow': '0 0 0 1px rgba(230,169,46,0.25), 0 12px 32px -8px rgba(0,0,0,0.45)',
+        },
+      }
+    }
+  }
+</script>
+
+<style>
+  /* ====== Reset & util dasar ====== */
+  html { scroll-behavior: smooth; }
+  body {
+    background-color: #181c22;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* ====== Signature: pola "watermark" garis lambang & nomor darurat mengambang ====== */
+  .lembaga-pattern {
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(230,169,46,0.14) 1px, transparent 0);
+    background-size: 22px 22px;
+  }
+
+  /* ====== Garis pemisah bergaya dokumen resmi ====== */
+  .rule-gold {
+    background: linear-gradient(90deg, transparent, #e6a92e 15%, #e6a92e 85%, transparent);
+    height: 1px;
+  }
+
+  /* ====== Scrollbar tipis ====== */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: #181c22; }
+  ::-webkit-scrollbar-thumb { background: #454e5d; border-radius: 8px; }
+  ::-webkit-scrollbar-thumb:hover { background: #576273; }
+
+  /* ====== Fokus keyboard yang jelas (aksesibilitas) ====== */
+  a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-visible {
+    outline: 2px solid #e6a92e;
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* ====== Transisi antar "halaman" (section) ====== */
+  .view-section {
+    display: none;
+  }
+  .view-section.active {
+    display: block;
+    animation: fadeSlideIn 0.5s ease both;
+  }
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ====== Modal ====== */
+  .modal-backdrop {
+    display: none;
+  }
+  .modal-backdrop.active {
+    display: flex;
+    animation: fadeIn 0.25s ease both;
+  }
+  .modal-backdrop.active .modal-panel {
+    animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes modalPop {
+    from { opacity: 0; transform: scale(0.94) translateY(8px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  /* ====== Kartu kategori: efek angkat halus ====== */
+  .category-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+  .category-card:hover, .category-card:focus-visible {
+    transform: translateY(-6px);
+    border-color: #e6a92e;
+  }
+
+  /* ====== Nomor "berkas" mengambang pada kartu kategori (bukan 01/02/03 dekoratif,
+     tapi kode klasifikasi layanan bergaya arsip resmi) ====== */
+  .file-code {
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  /* ====== Toast notifikasi salin nomor ====== */
+  #toast {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  /* ====== Menghormati preferensi reduced motion ====== */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* ====== Garis dekoratif "segel" pada hero ====== */
+  .seal-ring {
+    border: 1.5px dashed rgba(230,169,46,0.45);
+  }
+</style>
+</head>
+
+<body class="text-charcoal-100 antialiased">
+
+<!-- ======================================================================
+     SKIP TO CONTENT (aksesibilitas keyboard)
+====================================================================== -->
+<a href="#konten-utama" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:bg-gold-400 focus:text-charcoal-900 focus:px-4 focus:py-2 focus:rounded-lg focus:font-semibold">
+  Lompat ke konten utama
+</a>
+
+<!-- ======================================================================
+     HEADER / NAVBAR
+====================================================================== -->
+<header class="sticky top-0 z-50 bg-charcoal-900/90 backdrop-blur-md border-b border-charcoal-700">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-3.5 flex items-center justify-between">
+    <!-- Logo / Nama Situs -->
+    <a href="#" onclick="tampilkanBeranda(); return false;" class="flex items-center gap-3 group">
+      <span class="w-10 h-10 rounded-lg bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center shadow-gold-glow shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="w-5.5 h-5.5 text-charcoal-900" style="width:22px;height:22px">
+          <path d="M12 2L3 6v6c0 5 4 8.5 9 10 5-1.5 9-5 9-10V6l-9-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="currentColor" fill-opacity="0.15"/>
+          <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span class="leading-tight">
+        <span class="block font-display font-semibold text-[17px] sm:text-lg text-gold-200 tracking-tight">Layanan Universal Indonesia</span>
+        <span class="hidden sm:block text-[11px] text-charcoal-400 font-mono tracking-wide">DIREKTORI KONTAK LAYANAN PUBLIK</span>
+      </span>
+    </a>
+
+    <!-- Navigasi -->
+    <nav class="flex items-center gap-1 sm:gap-2" aria-label="Navigasi utama">
+      <button onclick="tampilkanBeranda()" class="hidden sm:inline-block px-3.5 py-2 text-sm font-medium text-charcoal-200 hover:text-gold-300 transition-colors rounded-lg">
+        Beranda
+      </button>
+      <button onclick="tampilkanKategori()" class="px-3.5 py-2 text-sm font-medium text-charcoal-200 hover:text-gold-300 transition-colors rounded-lg">
+        Kategori
+      </button>
+      <button onclick="bukaModalDarurat()" class="ml-1 sm:ml-2 inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 bg-gold-500 hover:bg-gold-400 text-charcoal-900 text-sm font-semibold rounded-lg transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="currentColor" stroke-width="2.2">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+        <span class="hidden xs:inline">Darurat</span>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main id="konten-utama">
+
+<!-- ======================================================================
+     SECTION 1 — HALAMAN UTAMA (LANDING / ABOUT US)
+====================================================================== -->
+<section id="beranda" class="view-section active">
+
+  <!-- ======= HERO ======= -->
+  <div class="relative overflow-hidden lembaga-pattern">
+    <!-- Gradasi latar -->
+    <div class="absolute inset-0 bg-gradient-to-b from-charcoal-900 via-charcoal-900/95 to-charcoal-950"></div>
+    <div class="absolute -top-32 -right-32 w-[28rem] h-[28rem] bg-gold-500/10 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/2 -left-40 w-[24rem] h-[24rem] bg-gold-600/10 rounded-full blur-3xl"></div>
+
+    <div class="relative max-w-5xl mx-auto px-5 sm:px-8 pt-16 sm:pt-24 pb-20 sm:pb-28 text-center">
+
+      <!-- Lencana kecil -->
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-gold-500/40 bg-gold-500/5 text-gold-300 text-xs font-mono tracking-wider mb-8">
+        <span class="w-1.5 h-1.5 rounded-full bg-gold-400 animate-pulse"></span>
+        DIREKTORI NASIONAL · 34 PROVINSI
+      </div>
+
+      <h1 class="font-display font-semibold text-4xl sm:text-6xl leading-[1.08] text-white mb-6 tracking-tight">
+        Satu pintu menuju<br/>
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-gold-300 via-gold-400 to-gold-500">layanan publik Indonesia</span>
+      </h1>
+
+      <p class="text-charcoal-300 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed mb-10">
+        Layanan Universal Indonesia menghimpun kontak resmi layanan keamanan, kesehatan,
+        kebencanaan, infrastruktur, hingga administrasi kependudukan — tervalidasi,
+        terorganisir per wilayah, dan siap dihubungi kapan saja Anda membutuhkannya.
+      </p>
+
+      <!-- ======= CTA UTAMA — "Cari Layananmu" ======= -->
+      <button onclick="tampilkanKategori()"
+        class="group relative inline-flex items-center gap-3 px-9 py-4.5 sm:py-5 bg-gold-500 hover:bg-gold-400 text-charcoal-900 font-display font-semibold text-lg sm:text-xl rounded-xl shadow-gold-glow transition-all hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_rgba(230,169,46,0.4),0_20px_40px_-10px_rgba(0,0,0,0.5)]">
+        Cari Layananmu
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-5 h-5 transition-transform group-hover:translate-x-1">
+          <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <p class="mt-5 text-charcoal-500 text-sm">Gratis · Tanpa registrasi · Tersedia 24/7</p>
+    </div>
+  </div>
+
+  <!-- ======= STATISTIK RINGKAS ======= -->
+  <div class="border-y border-charcoal-800 bg-charcoal-950">
+    <div class="max-w-5xl mx-auto px-5 sm:px-8 py-8 grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
+      <div>
+        <p class="font-display font-semibold text-2xl sm:text-3xl text-gold-300">5</p>
+        <p class="text-charcoal-400 text-xs sm:text-sm mt-1">Kategori Layanan</p>
+      </div>
+      <div>
+        <p class="font-display font-semibold text-2xl sm:text-3xl text-gold-300">60+</p>
+        <p class="text-charcoal-400 text-xs sm:text-sm mt-1">Kontak Terdaftar</p>
+      </div>
+      <div>
+        <p class="font-display font-semibold text-2xl sm:text-3xl text-gold-300">34</p>
+        <p class="text-charcoal-400 text-xs sm:text-sm mt-1">Provinsi Tercakup</p>
+      </div>
+      <div>
+        <p class="font-display font-semibold text-2xl sm:text-3xl text-gold-300">24/7</p>
+        <p class="text-charcoal-400 text-xs sm:text-sm mt-1">Akses Kapan Saja</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= LATAR BELAKANG ======= -->
+  <div class="max-w-5xl mx-auto px-5 sm:px-8 py-16 sm:py-24">
+    <div class="grid sm:grid-cols-[auto,1fr] gap-6 sm:gap-10 items-start mb-16">
+      <span class="hidden sm:flex w-14 h-14 rounded-xl border border-gold-500/30 bg-gold-500/5 items-center justify-center shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#e6a92e" stroke-width="1.8" class="w-6 h-6">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <div>
+        <p class="text-gold-400 font-mono text-xs tracking-widest mb-2">LATAR BELAKANG</p>
+        <h2 class="font-display font-semibold text-2xl sm:text-3xl text-white mb-4">Mengapa direktori ini dibutuhkan</h2>
+        <p class="text-charcoal-300 leading-relaxed mb-4">
+          Di tengah situasi darurat, kebingungan mencari nomor kontak yang tepat dapat menghabiskan
+          waktu berharga. Banyak masyarakat kesulitan menemukan kontak layanan publik yang benar,
+          terpisah antar instansi, dan seringkali tidak sesuai untuk wilayah domisili mereka.
+        </p>
+        <p class="text-charcoal-300 leading-relaxed">
+          Layanan Universal Indonesia hadir sebagai jembatan tunggal yang menghimpun,
+          memverifikasi, dan menyajikan kontak layanan vital secara terstruktur — mulai dari
+          keamanan, kesehatan, kebencanaan, infrastruktur, hingga administrasi kependudukan —
+          agar setiap warga dapat bertindak cepat dan tepat.
+        </p>
+      </div>
+    </div>
+
+    <!-- ======= VISI & MISI ======= -->
+    <div class="grid sm:grid-cols-2 gap-5 sm:gap-6">
+      <div class="rounded-2xl border border-charcoal-700 bg-charcoal-800/60 p-7 sm:p-8">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="w-9 h-9 rounded-lg bg-gold-500/10 border border-gold-500/30 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#e6a92e" stroke-width="2" class="w-[18px] h-[18px]">
+              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <h3 class="font-display font-semibold text-xl text-gold-200">Visi</h3>
+        </div>
+        <p class="text-charcoal-300 leading-relaxed">
+          Menjadi rujukan utama masyarakat Indonesia dalam mengakses kontak layanan
+          publik dan vital yang valid, cepat, dan mudah dijangkau dari seluruh penjuru negeri.
+        </p>
+      </div>
+
+      <div class="rounded-2xl border border-charcoal-700 bg-charcoal-800/60 p-7 sm:p-8">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="w-9 h-9 rounded-lg bg-gold-500/10 border border-gold-500/30 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#e6a92e" stroke-width="2" class="w-[18px] h-[18px]">
+              <path d="M9 11l3 3L22 4" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <h3 class="font-display font-semibold text-xl text-gold-200">Misi</h3>
+        </div>
+        <ul class="text-charcoal-300 leading-relaxed space-y-2.5">
+          <li class="flex gap-2.5"><span class="text-gold-400 mt-0.5">—</span><span>Menghimpun kontak layanan resmi dari sumber yang dapat dipertanggungjawabkan.</span></li>
+          <li class="flex gap-2.5"><span class="text-gold-400 mt-0.5">—</span><span>Menyajikan informasi berdasarkan domisili agar relevan bagi setiap wilayah.</span></li>
+          <li class="flex gap-2.5"><span class="text-gold-400 mt-0.5">—</span><span>Memastikan akses yang cepat, jelas, dan ramah bagi seluruh kalangan.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= CTA SEKUNDER PENUTUP ======= -->
+  <div class="border-t border-charcoal-800 bg-charcoal-950 py-16 sm:py-20 text-center px-5">
+    <h2 class="font-display font-semibold text-2xl sm:text-3xl text-white mb-3">Butuh kontak layanan sekarang?</h2>
+    <p class="text-charcoal-400 mb-8 max-w-md mx-auto">Telusuri lima kategori layanan dan temukan kontak sesuai wilayah domisili Anda.</p>
+    <button onclick="tampilkanKategori()" class="inline-flex items-center gap-2.5 px-7 py-3.5 bg-gold-500 hover:bg-gold-400 text-charcoal-900 font-semibold rounded-xl transition-colors">
+      Cari Layananmu
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-[18px] h-[18px]"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     SECTION 2 — KATEGORI & PENCARIAN
+====================================================================== -->
+<section id="kategori" class="view-section">
+  <div class="max-w-6xl mx-auto px-5 sm:px-8 py-10 sm:py-14">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="Navigasi jejak" class="flex items-center gap-2 text-sm text-charcoal-400 mb-6">
+      <button onclick="tampilkanBeranda()" class="hover:text-gold-300 transition-colors">Beranda</button>
+      <span>/</span>
+      <span class="text-gold-300">Kategori Layanan</span>
+    </nav>
+
+    <h1 class="font-display font-semibold text-3xl sm:text-4xl text-white mb-2">Pilih kategori layananmu</h1>
+    <p class="text-charcoal-400 mb-8">Telusuri berdasarkan kebutuhan, atau cari langsung nama layanan di kolom pencarian.</p>
+
+    <!-- ======= SEARCH BAR (live filter) ======= -->
+    <div class="relative mb-10 sm:mb-12">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-charcoal-400 pointer-events-none">
+        <circle cx="11" cy="11" r="8" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="m21 21-4.35-4.35" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <input
+        type="text"
+        id="search-kategori"
+        oninput="cariLayananLangsung(this.value)"
+        placeholder="Ketik nama layanan, mis. 'ambulans', 'KDRT', 'PLN'…"
+        aria-label="Cari nama layanan"
+        autocomplete="off"
+        class="w-full pl-12 pr-4 py-4 rounded-xl bg-charcoal-800 border border-charcoal-700 focus:border-gold-400 text-white placeholder-charcoal-500 outline-none transition-colors text-base"
+      />
+      <!-- Hasil pencarian langsung (dropdown) -->
+      <div id="hasil-pencarian" class="hidden absolute z-30 mt-2 w-full max-h-96 overflow-y-auto rounded-xl border border-charcoal-700 bg-charcoal-800 shadow-2xl divide-y divide-charcoal-700"></div>
+    </div>
+
+    <!-- ======= 5 KARTU KATEGORI UTAMA ======= -->
+    <div id="grid-kategori" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+      <!-- Kartu-kartu di-generate juga lewat JS agar konsisten dengan data,
+           namun ditulis statis di sini agar tetap terlihat & terindeks tanpa JS -->
+    </div>
+  </div>
+</section>
+
+
+<!-- ======================================================================
+     SECTION 3 — DAFTAR LAYANAN SPESIFIK (per kategori & wilayah)
+====================================================================== -->
+<section id="daftar-layanan" class="view-section">
+  <div class="max-w-6xl mx-auto px-5 sm:px-8 py-10 sm:py-14">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="Navigasi jejak" class="flex flex-wrap items-center gap-2 text-sm text-charcoal-400 mb-6">
+      <button onclick="tampilkanBeranda()" class="hover:text-gold-300 transition-colors">Beranda</button>
+      <span>/</span>
+      <button onclick="tampilkanKategori()" class="hover:text-gold-300 transition-colors">Kategori</button>
+      <span>/</span>
+      <span id="breadcrumb-kategori" class="text-gold-300">—</span>
+    </nav>
+
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-3">
+      <div class="flex items-center gap-4">
+        <span id="ikon-kategori-aktif" class="w-14 h-14 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center shrink-0"></span>
+        <div>
+          <h1 id="judul-kategori-aktif" class="font-display font-semibold text-2xl sm:text-3xl text-white">—</h1>
+          <p class="text-charcoal-400 text-sm mt-0.5 flex items-center gap-1.5">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5">
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+            Wilayah: <span id="wilayah-aktif" class="text-gold-300 font-medium">—</span>
+          </p>
+        </div>
+      </div>
+      <button onclick="ubahWilayah()" class="self-start sm:self-auto px-4 py-2 text-sm font-medium border border-charcoal-600 hover:border-gold-400 text-charcoal-200 hover:text-gold-300 rounded-lg transition-colors">
+        Ubah wilayah
+      </button>
+    </div>
+
+    <div class="rule-gold my-7"></div>
+
+    <!-- Filter cepat dalam daftar -->
+    <div class="relative mb-8">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-[18px] h-[18px] absolute left-3.5 top-1/2 -translate-y-1/2 text-charcoal-400 pointer-events-none">
+        <circle cx="11" cy="11" r="8" stroke-linecap="round" stroke-linejoin="round"/><path d="m21 21-4.35-4.35" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <input
+        type="text"
+        id="search-daftar"
+        oninput="filterDaftarLayanan(this.value)"
+        placeholder="Saring layanan dalam kategori ini…"
+        aria-label="Saring layanan dalam kategori ini"
+        autocomplete="off"
+        class="w-full pl-11 pr-4 py-3 rounded-lg bg-charcoal-800 border border-charcoal-700 focus:border-gold-400 text-white placeholder-charcoal-500 outline-none transition-colors text-sm"
+      />
+    </div>
+
+    <!-- Grid daftar layanan -->
+    <div id="grid-layanan" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+
+    <!-- Pesan kosong jika filter tidak menemukan hasil -->
+    <div id="pesan-kosong" class="hidden text-center py-16">
+      <p class="text-charcoal-400">Tidak ada layanan yang cocok dengan pencarianmu.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+
+<!-- ======================================================================
+     MODAL — PILIH DOMISILI / WILAYAH
+====================================================================== -->
+<div id="modal-wilayah" class="modal-backdrop fixed inset-0 z-[60] bg-charcoal-950/80 backdrop-blur-sm items-center justify-center px-5" role="dialog" aria-modal="true" aria-labelledby="judul-modal-wilayah">
+  <div class="modal-panel w-full max-w-lg bg-charcoal-800 border border-charcoal-600 rounded-2xl p-6 sm:p-8 shadow-2xl relative max-h-[85vh] overflow-y-auto">
+    <button onclick="tutupModalWilayah()" aria-label="Tutup" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg text-charcoal-400 hover:text-gold-300 hover:bg-charcoal-700 transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5"><path d="M18 6 6 18M6 6l12 12" stroke-linecap="round"/></svg>
+    </button>
+
+    <span class="inline-flex w-11 h-11 rounded-lg bg-gold-500/10 border border-gold-500/30 items-center justify-center mb-4">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#e6a92e" stroke-width="2" class="w-5 h-5"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="10" r="3"/></svg>
+    </span>
+
+    <h2 id="judul-modal-wilayah" class="font-display font-semibold text-xl sm:text-2xl text-white mb-1.5">Pilih domisili Anda</h2>
+    <p id="subjudul-modal-wilayah" class="text-charcoal-400 text-sm mb-6">Layanan akan disesuaikan dengan kontak resmi di wilayahmu.</p>
+
+    <label for="pilih-provinsi" class="block text-xs font-medium text-charcoal-300 mb-2 font-mono tracking-wide">PROVINSI</label>
+    <select id="pilih-provinsi" class="w-full px-4 py-3.5 rounded-lg bg-charcoal-900 border border-charcoal-600 focus:border-gold-400 text-white outline-none transition-colors mb-6 text-sm">
+      <option value="">— Pilih provinsi —</option>
+      <option>DKI Jakarta</option>
+      <option>Jawa Barat</option>
+      <option>Jawa Tengah</option>
+      <option>Jawa Timur</option>
+      <option>Banten</option>
+      <option>DI Yogyakarta</option>
+      <option>Sumatera Utara</option>
+      <option>Sumatera Barat</option>
+      <option>Sumatera Selatan</option>
+      <option>Kepulauan Riau</option>
+      <option>Riau</option>
+      <option>Lampung</option>
+      <option>Bali</option>
+      <option>Nusa Tenggara Barat</option>
+      <option>Nusa Tenggara Timur</option>
+      <option>Kalimantan Barat</option>
+      <option>Kalimantan Timur</option>
+      <option>Kalimantan Selatan</option>
+      <option>Sulawesi Selatan</option>
+      <option>Sulawesi Utara</option>
+      <option>Papua</option>
+      <option value="__lainnya__">Provinsi lainnya</option>
+    </select>
+
+    <button onclick="konfirmasiWilayah()" class="w-full py-3.5 bg-gold-500 hover:bg-gold-400 text-charcoal-900 font-semibold rounded-lg transition-colors">
+      Tampilkan Layanan
+    </button>
+    <p class="text-charcoal-500 text-xs text-center mt-4">Data wilayah digunakan untuk mensimulasikan kontak resmi terdekat.</p>
+  </div>
+</div>
+
+
+<!-- ======================================================================
+     MODAL — KONTAK DARURAT CEPAT (dari tombol navbar)
+====================================================================== -->
+<div id="modal-darurat" class="modal-backdrop fixed inset-0 z-[60] bg-charcoal-950/80 backdrop-blur-sm items-center justify-center px-5" role="dialog" aria-modal="true" aria-labelledby="judul-modal-darurat">
+  <div class="modal-panel w-full max-w-md bg-charcoal-800 border border-gold-500/30 rounded-2xl p-6 sm:p-8 shadow-2xl relative">
+    <button onclick="tutupModalDarurat()" aria-label="Tutup" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg text-charcoal-400 hover:text-gold-300 hover:bg-charcoal-700 transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5"><path d="M18 6 6 18M6 6l12 12" stroke-linecap="round"/></svg>
+    </button>
+    <h2 id="judul-modal-darurat" class="font-display font-semibold text-xl text-white mb-1.5">Kontak darurat tercepat</h2>
+    <p class="text-charcoal-400 text-sm mb-6">Untuk situasi mendesak, hubungi salah satu nomor berikut.</p>
+    <div class="space-y-3">
+      <div class="flex items-center justify-between p-3.5 rounded-lg bg-charcoal-900 border border-charcoal-700">
+        <div>
+          <p class="text-white font-medium text-sm">Polisi (Panggilan Darurat)</p>
+          <p class="text-gold-300 font-mono text-sm" data-nomor>081387265842</p>
+        </div>
+        <a href="https://wa.me/6281387265842" target="_blank" rel="noopener" class="px-3.5 py-2 bg-gold-500 hover:bg-gold-400 text-charcoal-900 text-xs font-semibold rounded-lg transition-colors">Panggil</a>
+      </div>
+      <div class="flex items-center justify-between p-3.5 rounded-lg bg-charcoal-900 border border-charcoal-700">
+        <div>
+          <p class="text-white font-medium text-sm">Ambulans</p>
+          <p class="text-gold-300 font-mono text-sm" data-nomor>081387265842</p>
+        </div>
+        <a href="https://wa.me/6281387265842" target="_blank" rel="noopener" class="px-3.5 py-2 bg-gold-500 hover:bg-gold-400 text-charcoal-900 text-xs font-semibold rounded-lg transition-colors">Panggil</a>
+      </div>
+      <div class="flex items-center justify-between p-3.5 rounded-lg bg-charcoal-900 border border-charcoal-700">
+        <div>
+          <p class="text-white font-medium text-sm">Pemadam Kebakaran</p>
+          <p class="text-gold-300 font-mono text-sm" data-nomor>081387265842</p>
+        </div>
+        <a href="https://wa.me/6281387265842" target="_blank" rel="noopener" class="px-3.5 py-2 bg-gold-500 hover:bg-gold-400 text-charcoal-900 text-xs font-semibold rounded-lg transition-colors">Panggil</a>
+      </div>
+    </div>
+    <p class="text-charcoal-500 text-[11px] text-center mt-5">*Nomor bersifat contoh (dummy) untuk keperluan pengujian tampilan.</p>
+  </div>
+</div>
+
+
+<!-- ======================================================================
+     TOAST NOTIFIKASI (mis. saat nomor disalin)
+====================================================================== -->
+<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[70] px-5 py-3 bg-charcoal-700 border border-gold-500/40 text-gold-200 text-sm font-medium rounded-lg shadow-2xl opacity-0 pointer-events-none translate-y-3">
+  Nomor telah disalin
+</div>
+
+
+<!-- ======================================================================
+     FOOTER
+====================================================================== -->
+<footer class="border-t border-charcoal-800 bg-charcoal-950 mt-8">
+  <div class="max-w-6xl mx-auto px-5 sm:px-8 py-10">
+    <div class="grid sm:grid-cols-3 gap-8 mb-8">
+      <div>
+        <p class="font-display font-semibold text-gold-200 mb-2">Layanan Universal Indonesia</p>
+        <p class="text-charcoal-400 text-sm leading-relaxed">Direktori kontak layanan publik dan vital, dihimpun untuk seluruh masyarakat Indonesia.</p>
+      </div>
+      <div>
+        <p class="text-charcoal-300 text-sm font-semibold mb-3">Kategori</p>
+        <ul class="space-y-2 text-sm text-charcoal-400">
+          <li><button onclick="bukaKategori('keamanan')" class="hover:text-gold-300 transition-colors">Keamanan</button></li>
+          <li><button onclick="bukaKategori('kesehatan')" class="hover:text-gold-300 transition-colors">Kesehatan</button></li>
+          <li><button onclick="bukaKategori('kebencanaan')" class="hover:text-gold-300 transition-colors">Darurat Kebencanaan</button></li>
+        </ul>
+      </div>
+      <div>
+        <p class="text-charcoal-300 text-sm font-semibold mb-3">Penting</p>
+        <p class="text-charcoal-500 text-xs leading-relaxed">
+          Seluruh nomor kontak pada versi ini adalah data dummy (<span class="font-mono">081387265842</span>)
+          untuk keperluan pengujian antarmuka, dan belum tersambung ke layanan resmi sesungguhnya.
+        </p>
+      </div>
+    </div>
+    <div class="rule-gold mb-6"></div>
+    <p class="text-charcoal-500 text-xs text-center">© 2026 Layanan Universal Indonesia. Dibuat untuk mempermudah akses layanan publik bagi seluruh warga.</p>
+  </div>
+</footer>
+
+
+<script>
+/* ============================================================================
+   LAYANAN UNIVERSAL INDONESIA — LOGIKA APLIKASI (Vanilla JavaScript)
+   Struktur:
+   1. Basis Data (dummy) — kategori & daftar layanan
+   2. Navigasi antar-"halaman" (section toggle)
+   3. Render kartu kategori
+   4. Alur modal wilayah -> daftar layanan
+   5. Fitur pencarian (live filter) di halaman kategori & di halaman daftar
+   6. Modal darurat cepat & util (copy nomor, toast)
+============================================================================ */
+
+/* ----------------------------------------------------------------------
+   1. BASIS DATA
+   Setiap kategori memiliki: id, nama, deskripsi singkat, ikon (SVG path),
+   dan daftar layanan (nama, deskripsi, ikon emoji sebagai representasi visual).
+   NOMOR TELEPON: seluruhnya menggunakan data dummy 081387265842 sesuai kebutuhan pengujian.
+---------------------------------------------------------------------- */
+const NOMOR_DUMMY = "081387265842";
+
+/* Mengubah nomor lokal (mis. 081387265842) menjadi format link WhatsApp (wa.me),
+   karena nomor kontak pada situs ini sudah terdaftar di WhatsApp. */
+function tautanWhatsApp(nomor) {
+  const nomorBersih = nomor.replace(/[^0-9]/g, ""); // buang spasi/simbol
+  const nomorInternasional = nomorBersih.startsWith("0")
+    ? "62" + nomorBersih.slice(1)
+    : nomorBersih;
+  return `https://wa.me/${nomorInternasional}`;
+}
+
+const DATA_KATEGORI = {
+  keamanan: {
+    nama: "Keamanan",
+    deskripsi: "Layanan kepolisian, pengaduan kekerasan, dan keamanan lingkungan.",
+    warna: "from-gold-500/15 to-gold-600/5",
+    ikonSvg: `<path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6l8-4z" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.5 12l1.8 1.8L15 10.2" stroke-linecap="round" stroke-linejoin="round"/>`,
+    layanan: [
+      { nama: "Panggilan Darurat Kepolisian", desc: "Kontak cepat kepolisian untuk kondisi darurat dan tindak kriminal yang sedang berlangsung.", emoji: "🚓" },
+      { nama: "Layanan Pengaduan KDRT", desc: "Pelaporan dan pendampingan korban kekerasan dalam rumah tangga secara rahasia.", emoji: "🛡️" },
+      { nama: "Pengaduan Kekerasan Seksual", desc: "Saluran aman untuk melaporkan kekerasan seksual dan mendapatkan pendampingan hukum awal.", emoji: "🤝" },
+      { nama: "Perlindungan Anak (P2TP2A)", desc: "Layanan perlindungan dan pengaduan kasus kekerasan atau eksploitasi terhadap anak.", emoji: "🧒" },
+      { nama: "Satpol PP Wilayah", desc: "Penertiban ketertiban umum, gangguan lingkungan, dan penegakan peraturan daerah.", emoji: "🚨" },
+      { nama: "Pos Ronda & Keamanan Lingkungan", desc: "Kontak koordinator keamanan RT/RW untuk laporan gangguan keamanan lokal.", emoji: "🏘️" },
+      { nama: "Laporan Kehilangan Dokumen", desc: "Pelaporan kehilangan KTP, dompet, atau dokumen penting untuk proses kepolisian.", emoji: "📋" },
+      { nama: "Unit Reserse Kriminal", desc: "Penanganan lanjutan kasus pencurian, penipuan, dan tindak kriminal lainnya.", emoji: "🔍" },
+      { nama: "Layanan Anti-Terorisme (Densus)", desc: "Pelaporan indikasi aktivitas terorisme atau ancaman keamanan skala luas.", emoji: "🎯" },
+      { nama: "Patroli Siber (Cyber Crime)", desc: "Pengaduan penipuan online, peretasan, dan kejahatan siber lainnya.", emoji: "💻" },
+      { nama: "Pengamanan Lalu Lintas", desc: "Kontak unit lalu lintas untuk kecelakaan, pelanggaran, dan kemacetan darurat.", emoji: "🚦" },
+      { nama: "Perlindungan Saksi (LPSK)", desc: "Layanan perlindungan bagi saksi dan pelapor kasus hukum tertentu.", emoji: "🕊️" },
+    ]
+  },
+  kesehatan: {
+    nama: "Kesehatan",
+    deskripsi: "Ambulans, rumah sakit rujukan, dan layanan kesehatan darurat.",
+    warna: "from-gold-500/15 to-gold-600/5",
+    ikonSvg: `<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z" stroke-linecap="round" stroke-linejoin="round"/>`,
+    layanan: [
+      { nama: "Layanan Ambulans Gratis", desc: "Penjemputan pasien darurat menuju fasilitas kesehatan terdekat, siaga 24 jam.", emoji: "🚑" },
+      { nama: "IGD Rumah Sakit Rujukan", desc: "Instalasi Gawat Darurat rumah sakit rujukan pemerintah untuk kasus akut.", emoji: "🏥" },
+      { nama: "Puskesmas Kecamatan", desc: "Layanan kesehatan primer, imunisasi, dan konsultasi umum tingkat kecamatan.", emoji: "⚕️" },
+      { nama: "Hotline COVID-19 & Wabah", desc: "Informasi penanganan wabah, isolasi mandiri, dan rujukan fasilitas kesehatan.", emoji: "🦠" },
+      { nama: "Layanan Kesehatan Jiwa (Hotline)", desc: "Dukungan psikologis dan rujukan penanganan kesehatan mental secara rahasia.", emoji: "💚" },
+      { nama: "Donor Darah (PMI)", desc: "Informasi jadwal donor darah dan permintaan darah darurat dari PMI setempat.", emoji: "🩸" },
+      { nama: "Layanan BPJS Kesehatan", desc: "Bantuan administrasi kepesertaan dan klaim layanan BPJS Kesehatan.", emoji: "📇" },
+      { nama: "Konsultasi Gizi & Stunting", desc: "Konsultasi pencegahan stunting dan gizi buruk bagi ibu dan anak.", emoji: "🍼" },
+      { nama: "Apotek Siaga 24 Jam", desc: "Informasi apotek yang beroperasi penuh untuk kebutuhan obat mendesak.", emoji: "💊" },
+      { nama: "Layanan Ambulans Jenazah", desc: "Transportasi jenazah menuju rumah duka atau pemakaman sesuai prosedur.", emoji: "🕯️" },
+      { nama: "Rumah Sakit Bersalin Rujukan", desc: "Fasilitas rujukan persalinan darurat dan perawatan ibu-anak.", emoji: "👶" },
+      { nama: "Penanganan Gigitan Hewan/Rabies", desc: "Layanan vaksin anti-rabies dan penanganan darurat gigitan hewan.", emoji: "🐾" },
+    ]
+  },
+  kebencanaan: {
+    nama: "Darurat Kebencanaan",
+    deskripsi: "Pemadam kebakaran, BPBD, SAR, dan tanggap darurat bencana alam.",
+    warna: "from-gold-500/15 to-gold-600/5",
+    ikonSvg: `<path d="M12 2s7 6.5 7 12a7 7 0 0 1-14 0c0-2.5 1.5-4.5 2.5-6 0 1.5 1 2.5 1.5 2.5-.5-3 1-6 3-8.5z" stroke-linecap="round" stroke-linejoin="round"/>`,
+    layanan: [
+      { nama: "Pemadam Kebakaran", desc: "Penanganan kebakaran gedung, permukiman, dan lahan secara cepat dan siaga 24 jam.", emoji: "🚒" },
+      { nama: "BPBD (Badan Penanggulangan Bencana)", desc: "Koordinasi tanggap darurat bencana alam tingkat kabupaten/kota.", emoji: "🏢" },
+      { nama: "Basarnas (Pencarian & Pertolongan)", desc: "Operasi pencarian dan penyelamatan korban bencana, kecelakaan, atau orang hilang.", emoji: "🧭" },
+      { nama: "Peringatan Dini Gempa & Tsunami (BMKG)", desc: "Informasi resmi peringatan dini gempa bumi dan potensi tsunami.", emoji: "🌊" },
+      { nama: "Evakuasi Banjir", desc: "Koordinasi evakuasi warga terdampak banjir menuju posko pengungsian.", emoji: "🌧️" },
+      { nama: "Tanggap Darurat Tanah Longsor", desc: "Penanganan cepat wilayah rawan dan terdampak longsor.", emoji: "⛰️" },
+      { nama: "Posko Pengungsian Bencana", desc: "Informasi lokasi dan kapasitas posko pengungsian terdekat.", emoji: "⛺" },
+      { nama: "Dapur Umum & Bantuan Logistik", desc: "Koordinasi distribusi logistik dan dapur umum bagi korban bencana.", emoji: "🍲" },
+      { nama: "Peringatan Dini Cuaca Ekstrem", desc: "Informasi resmi cuaca ekstrem, angin kencang, dan gelombang tinggi.", emoji: "🌪️" },
+      { nama: "Tim SAR Gunung & Hutan", desc: "Pertolongan darurat bagi pendaki atau warga hilang di area gunung/hutan.", emoji: "🏔️" },
+      { nama: "Penanganan Kebakaran Hutan & Lahan", desc: "Koordinasi pemadaman dan pencegahan kebakaran hutan serta lahan gambut.", emoji: "🔥" },
+      { nama: "Relawan Kebencanaan Terlatih", desc: "Kontak koordinasi relawan untuk mendukung operasi tanggap darurat.", emoji: "🦺" },
+    ]
+  },
+  infrastruktur: {
+    nama: "Infrastruktur & Utilitas",
+    deskripsi: "Listrik, air bersih, gas, jalan rusak, dan gangguan utilitas publik.",
+    warna: "from-gold-500/15 to-gold-600/5",
+    ikonSvg: `<path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z" stroke-linecap="round" stroke-linejoin="round"/>`,
+    layanan: [
+      { nama: "Gangguan Listrik PLN", desc: "Pelaporan pemadaman listrik, kerusakan jaringan, dan tagihan listrik.", emoji: "💡" },
+      { nama: "Gangguan Air Bersih (PDAM)", desc: "Pelaporan air tidak mengalir, kebocoran pipa, dan kualitas air bersih.", emoji: "🚰" },
+      { nama: "Kebocoran Gas PGN", desc: "Pelaporan darurat kebocoran gas rumah tangga dan jaringan distribusi.", emoji: "🔥" },
+      { nama: "Kerusakan Jalan & Jembatan", desc: "Pelaporan jalan berlubang, jembatan rusak, dan infrastruktur jalan lainnya.", emoji: "🛣️" },
+      { nama: "Gangguan Telekomunikasi", desc: "Pelaporan gangguan jaringan telepon dan internet layanan publik.", emoji: "📡" },
+      { nama: "Penerangan Jalan Umum (PJU)", desc: "Pelaporan lampu jalan mati atau rusak di wilayah permukiman.", emoji: "🛤️" },
+      { nama: "Pengangkutan Sampah", desc: "Jadwal dan pelaporan keterlambatan pengangkutan sampah lingkungan.", emoji: "🗑️" },
+      { nama: "Saluran Drainase & Banjir Kota", desc: "Pelaporan saluran tersumbat penyebab genangan atau banjir lokal.", emoji: "🌊" },
+      { nama: "Transportasi Umum (Dishub)", desc: "Informasi dan pengaduan layanan transportasi umum dan terminal.", emoji: "🚌" },
+      { nama: "Perbaikan Fasilitas Umum", desc: "Pelaporan kerusakan taman kota, halte, dan fasilitas publik lainnya.", emoji: "🏗️" },
+      { nama: "Pemadaman Terjadwal PLN", desc: "Informasi jadwal pemeliharaan dan pemadaman listrik terencana.", emoji: "📅" },
+      { nama: "Internet Desa & Wilayah 3T", desc: "Pengaduan akses internet di wilayah terdepan, terluar, dan tertinggal.", emoji: "🌐" },
+    ]
+  },
+  administrasi: {
+    nama: "Hukum & Administrasi Kependudukan",
+    deskripsi: "KTP, akta, layanan hukum, dan administrasi kependudukan lainnya.",
+    warna: "from-gold-500/15 to-gold-600/5",
+    ikonSvg: `<path d="M9 2h6l3 3v17H6V5l3-3z" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 10h6M9 14h6M9 18h3" stroke-linecap="round"/>`,
+    layanan: [
+      { nama: "Pembuatan / Perpanjangan KTP", desc: "Layanan pembuatan, perpanjangan, dan perbaikan data KTP elektronik.", emoji: "🪪" },
+      { nama: "Akta Kelahiran & Kematian", desc: "Pengurusan akta kelahiran, akta kematian, dan pencatatan sipil lainnya.", emoji: "📜" },
+      { nama: "Kartu Keluarga (KK)", desc: "Pembuatan dan pembaruan data Kartu Keluarga di Disdukcapil.", emoji: "👪" },
+      { nama: "Layanan Bantuan Hukum Gratis (LBH)", desc: "Konsultasi dan pendampingan hukum gratis bagi masyarakat tidak mampu.", emoji: "⚖️" },
+      { nama: "Pengaduan Ombudsman", desc: "Pelaporan maladministrasi pelayanan publik oleh instansi pemerintah.", emoji: "📢" },
+      { nama: "Layanan Imigrasi & Paspor", desc: "Informasi dan pengurusan paspor serta dokumen keimigrasian.", emoji: "🛂" },
+      { nama: "Pengurusan Surat Nikah", desc: "Layanan pencatatan pernikahan di KUA dan Disdukcapil.", emoji: "💍" },
+      { nama: "Notaris & PPAT Rujukan", desc: "Rujukan kontak notaris resmi untuk keperluan dokumen legal.", emoji: "🖋️" },
+      { nama: "Pengadilan Negeri Setempat", desc: "Informasi layanan administrasi perkara di pengadilan negeri wilayah.", emoji: "🏛️" },
+      { nama: "Pengaduan Korupsi (KPK)", desc: "Saluran pelaporan dugaan tindak pidana korupsi secara rahasia.", emoji: "🔎" },
+      { nama: "Layanan NPWP & Perpajakan", desc: "Bantuan administrasi pembuatan NPWP dan konsultasi perpajakan dasar.", emoji: "🧾" },
+      { nama: "Perlindungan Konsumen (BPKN)", desc: "Pengaduan sengketa konsumen dan perlindungan hak-hak konsumen.", emoji: "🛒" },
+    ]
+  }
+};
+
+// Urutan tampil kartu kategori (sesuai kebutuhan brief)
+const URUTAN_KATEGORI = ["keamanan", "kesehatan", "kebencanaan", "infrastruktur", "administrasi"];
+
+/* ----------------------------------------------------------------------
+   STATE APLIKASI
+---------------------------------------------------------------------- */
+let kategoriDipilih = null;   // id kategori yang sedang dibuka
+let wilayahDipilih = null;    // nama provinsi hasil pilihan modal
+
+/* ----------------------------------------------------------------------
+   2. NAVIGASI ANTAR "HALAMAN" (section toggle)
+---------------------------------------------------------------------- */
+function sembunyikanSemuaSection() {
+  document.querySelectorAll(".view-section").forEach(s => s.classList.remove("active"));
+}
+
+function tampilkanBeranda() {
+  sembunyikanSemuaSection();
+  document.getElementById("beranda").classList.add("active");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function tampilkanKategori() {
+  sembunyikanSemuaSection();
+  document.getElementById("kategori").classList.add("active");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  // Kosongkan pencarian setiap kali masuk ke halaman kategori
+  const inputSearch = document.getElementById("search-kategori");
+  if (inputSearch) inputSearch.value = "";
+  document.getElementById("hasil-pencarian").classList.add("hidden");
+}
+
+function tampilkanHalamanDaftar() {
+  sembunyikanSemuaSection();
+  document.getElementById("daftar-layanan").classList.add("active");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* ----------------------------------------------------------------------
+   3. RENDER KARTU KATEGORI (5 kartu utama)
+---------------------------------------------------------------------- */
+function renderKartuKategori() {
+  const grid = document.getElementById("grid-kategori");
+  grid.innerHTML = URUTAN_KATEGORI.map((id, index) => {
+    const kat = DATA_KATEGORI[id];
+    const kodeArsip = `LUI-${String(index + 1).padStart(2, "0")}`; // kode klasifikasi bergaya arsip, bukan penomoran dekoratif semata
+    return `
+      <button
+        onclick="bukaKategori('${id}')"
+        aria-label="Buka kategori ${kat.nama}"
+        class="category-card text-left rounded-2xl border border-charcoal-700 bg-charcoal-800/70 p-6 hover:shadow-gold-glow relative overflow-hidden"
+      >
+        <span class="absolute top-4 right-5 file-code text-[10px] text-charcoal-500">${kodeArsip}</span>
+        <span class="inline-flex w-12 h-12 rounded-xl bg-gradient-to-br ${kat.warna} border border-gold-500/30 items-center justify-center mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#f5db8d" stroke-width="1.8" class="w-6 h-6">${kat.ikonSvg}</svg>
+        </span>
+        <h3 class="font-display font-semibold text-lg text-white mb-1.5">${kat.nama}</h3>
+        <p class="text-charcoal-400 text-sm leading-relaxed mb-4">${kat.deskripsi}</p>
+        <span class="inline-flex items-center gap-1.5 text-gold-300 text-sm font-medium">
+          Lihat layanan
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="w-4 h-4"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </button>
+    `;
+  }).join("");
+}
+
+/* ----------------------------------------------------------------------
+   4. ALUR: KLIK KATEGORI -> MODAL WILAYAH -> DAFTAR LAYANAN
+---------------------------------------------------------------------- */
+function bukaKategori(idKategori) {
+  kategoriDipilih = idKategori;
+  // Jika pengguna sudah pernah memilih wilayah pada sesi ini, langsung tampilkan daftar
+  if (wilayahDipilih) {
+    renderDaftarLayanan();
+    tampilkanHalamanDaftar();
+  } else {
+    bukaModalWilayah();
+  }
+}
+
+function bukaModalWilayah() {
+  const modal = document.getElementById("modal-wilayah");
+  const kat = DATA_KATEGORI[kategoriDipilih];
+  document.getElementById("subjudul-modal-wilayah").textContent =
+    `Kami akan menampilkan kontak layanan "${kat.nama}" sesuai wilayah domisilimu.`;
+  modal.classList.add("active");
+  document.body.style.overflow = "hidden";
+  // Fokus ke select untuk aksesibilitas keyboard
+  setTimeout(() => document.getElementById("pilih-provinsi").focus(), 100);
+}
+
+function tutupModalWilayah() {
+  document.getElementById("modal-wilayah").classList.remove("active");
+  document.body.style.overflow = "";
+}
+
+function konfirmasiWilayah() {
+  const select = document.getElementById("pilih-provinsi");
+  const nilai = select.value;
+
+  if (!nilai) {
+    select.classList.add("border-red-400");
+    select.focus();
+    return;
+  }
+  select.classList.remove("border-red-400");
+
+  wilayahDipilih = (nilai === "__lainnya__") ? "Wilayah Lainnya" : nilai;
+  tutupModalWilayah();
+  renderDaftarLayanan();
+  tampilkanHalamanDaftar();
+}
+
+function ubahWilayah() {
+  wilayahDipilih = null;
+  bukaModalWilayah();
+}
+
+/* ----------------------------------------------------------------------
+   5a. RENDER DAFTAR LAYANAN SPESIFIK (per kategori terpilih)
+---------------------------------------------------------------------- */
+function renderDaftarLayanan() {
+  const kat = DATA_KATEGORI[kategoriDipilih];
+
+  // Perbarui header halaman
+  document.getElementById("breadcrumb-kategori").textContent = kat.nama;
+  document.getElementById("judul-kategori-aktif").textContent = kat.nama;
+  document.getElementById("wilayah-aktif").textContent = wilayahDipilih;
+  document.getElementById("ikon-kategori-aktif").innerHTML =
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#e6a92e" stroke-width="1.8" class="w-6 h-6">${kat.ikonSvg}</svg>`;
+
+  // Reset kolom filter setiap kali membuka kategori baru
+  const inputFilter = document.getElementById("search-daftar");
+  if (inputFilter) inputFilter.value = "";
+
+  gambarKartuLayanan(kat.layanan);
+}
+
+function gambarKartuLayanan(daftar) {
+  const grid = document.getElementById("grid-layanan");
+  const pesanKosong = document.getElementById("pesan-kosong");
+
+  if (daftar.length === 0) {
+    grid.innerHTML = "";
+    pesanKosong.classList.remove("hidden");
+    return;
+  }
+  pesanKosong.classList.add("hidden");
+
+  grid.innerHTML = daftar.map(layanan => `
+    <div class="rounded-xl border border-charcoal-700 bg-charcoal-800/60 p-5 flex flex-col hover:border-gold-500/40 transition-colors">
+      <div class="flex items-start gap-3.5 mb-3">
+        <span class="w-11 h-11 rounded-lg bg-gold-500/10 border border-gold-500/25 flex items-center justify-center text-xl shrink-0" aria-hidden="true">
+          ${layanan.emoji}
+        </span>
+        <div class="min-w-0">
+          <h3 class="font-semibold text-white text-[15px] leading-snug">${layanan.nama}</h3>
+        </div>
+      </div>
+      <p class="text-charcoal-400 text-sm leading-relaxed mb-4 flex-1">${layanan.desc}</p>
+
+      <div class="flex items-center justify-between gap-2 pt-3 border-t border-charcoal-700">
+        <button
+          onclick="salinNomor('${NOMOR_DUMMY}')"
+          class="font-mono text-xs text-charcoal-300 hover:text-gold-300 transition-colors flex items-center gap-1.5"
+          aria-label="Salin nomor telepon ${layanan.nama}"
+          title="Klik untuk menyalin nomor"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          ${NOMOR_DUMMY}
+        </button>
+        <a href="${tautanWhatsApp(NOMOR_DUMMY)}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-gold-500 hover:bg-gold-400 text-charcoal-900 text-xs font-semibold rounded-lg transition-colors shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" class="w-3.5 h-3.5">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+          Panggil
+        </a>
+      </div>
+    </div>
+  `).join("");
+}
+
+/* ----------------------------------------------------------------------
+   5b. FILTER DAFTAR LAYANAN (di dalam kategori yang sudah dibuka)
+---------------------------------------------------------------------- */
+function filterDaftarLayanan(kataKunci) {
+  const kat = DATA_KATEGORI[kategoriDipilih];
+  const kunci = kataKunci.trim().toLowerCase();
+  const hasil = kat.layanan.filter(l =>
+    l.nama.toLowerCase().includes(kunci) || l.desc.toLowerCase().includes(kunci)
+  );
+  gambarKartuLayanan(hasil);
+}
+
+/* ----------------------------------------------------------------------
+   5c. PENCARIAN LANGSUNG (live search) DI HALAMAN KATEGORI
+   Mencari lintas seluruh kategori & layanan sekaligus.
+---------------------------------------------------------------------- */
+function cariLayananLangsung(kataKunci) {
+  const kotakHasil = document.getElementById("hasil-pencarian");
+  const kunci = kataKunci.trim().toLowerCase();
+
+  if (kunci.length === 0) {
+    kotakHasil.classList.add("hidden");
+    kotakHasil.innerHTML = "";
+    return;
+  }
+
+  // Kumpulkan hasil dari seluruh kategori
+  let hasilGabungan = [];
+  URUTAN_KATEGORI.forEach(idKat => {
+    const kat = DATA_KATEGORI[idKat];
+    kat.layanan.forEach(l => {
+      if (l.nama.toLowerCase().includes(kunci) || l.desc.toLowerCase().includes(kunci)) {
+        hasilGabungan.push({ ...l, idKategori: idKat, namaKategori: kat.nama });
+      }
+    });
+  });
+
+  if (hasilGabungan.length === 0) {
+    kotakHasil.innerHTML = `<div class="p-4 text-sm text-charcoal-400">Tidak ditemukan layanan bernama "${kataKunci}".</div>`;
+    kotakHasil.classList.remove("hidden");
+    return;
+  }
+
+  kotakHasil.innerHTML = hasilGabungan.slice(0, 8).map(item => `
+    <button
+      onclick="pilihHasilPencarian('${item.idKategori}')"
+      class="w-full text-left flex items-center gap-3 p-3.5 hover:bg-charcoal-700/70 transition-colors"
+    >
+      <span class="w-9 h-9 rounded-lg bg-gold-500/10 flex items-center justify-center text-base shrink-0" aria-hidden="true">${item.emoji}</span>
+      <span class="min-w-0">
+        <span class="block text-sm text-white font-medium truncate">${item.nama}</span>
+        <span class="block text-xs text-charcoal-400">${item.namaKategori}</span>
+      </span>
+    </button>
+  `).join("");
+  kotakHasil.classList.remove("hidden");
+}
+
+function pilihHasilPencarian(idKategori) {
+  document.getElementById("hasil-pencarian").classList.add("hidden");
+  document.getElementById("search-kategori").value = "";
+  bukaKategori(idKategori);
+}
+
+// Tutup dropdown hasil pencarian saat klik di luar area
+document.addEventListener("click", (e) => {
+  const kotakHasil = document.getElementById("hasil-pencarian");
+  const inputSearch = document.getElementById("search-kategori");
+  if (kotakHasil && inputSearch && !inputSearch.contains(e.target) && !kotakHasil.contains(e.target)) {
+    kotakHasil.classList.add("hidden");
+  }
+});
+
+/* ----------------------------------------------------------------------
+   6. MODAL DARURAT CEPAT (navbar) & UTILITAS
+---------------------------------------------------------------------- */
+function bukaModalDarurat() {
+  document.getElementById("modal-darurat").classList.add("active");
+  document.body.style.overflow = "hidden";
+}
+function tutupModalDarurat() {
+  document.getElementById("modal-darurat").classList.remove("active");
+  document.body.style.overflow = "";
+}
+
+// Tutup modal saat klik area backdrop (di luar panel)
+document.getElementById("modal-wilayah").addEventListener("click", (e) => {
+  if (e.target.id === "modal-wilayah") tutupModalWilayah();
+});
+document.getElementById("modal-darurat").addEventListener("click", (e) => {
+  if (e.target.id === "modal-darurat") tutupModalDarurat();
+});
+
+// Tutup modal dengan tombol Escape (aksesibilitas keyboard)
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    tutupModalWilayah();
+    tutupModalDarurat();
+  }
+});
+
+// Salin nomor ke clipboard + tampilkan toast konfirmasi
+function salinNomor(nomor) {
+  navigator.clipboard?.writeText(nomor).then(() => {
+    tampilkanToast(`Nomor ${nomor} disalin ke clipboard`);
+  }).catch(() => {
+    tampilkanToast("Gagal menyalin nomor, silakan salin secara manual");
+  });
+}
+
+let timeoutToast;
+function tampilkanToast(pesan) {
+  const toast = document.getElementById("toast");
+  toast.textContent = pesan;
+  toast.classList.remove("opacity-0", "translate-y-3");
+  toast.classList.add("opacity-100", "translate-y-0");
+  clearTimeout(timeoutToast);
+  timeoutToast = setTimeout(() => {
+    toast.classList.remove("opacity-100", "translate-y-0");
+    toast.classList.add("opacity-0", "translate-y-3");
+  }, 2400);
+}
+
+/* ----------------------------------------------------------------------
+   INISIALISASI HALAMAN
+---------------------------------------------------------------------- */
+document.addEventListener("DOMContentLoaded", () => {
+  renderKartuKategori();
+});
+</script>
+
+</body>
+</html>
